@@ -100,4 +100,37 @@ class ProductControllerTest extends TestCase
 
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
+
+
+    /** @test */
+    public function it_returns_validation_errors_when_required_fields_are_missing()
+    {
+        // Arrange: Prepare invalid data (missing 'name', 'description', and 'price')
+        $invalidData = [];
+
+        // Act: Send a POST request to the /products endpoint
+        $response = $this->postJson('/api/products', $invalidData);
+
+        // Assert: Check for validation error
+        $response->assertStatus(422); // Unprocessable Entity
+        $response->assertJsonValidationErrors(['name', 'price']);
+    }
+
+    /** @test */
+    public function it_returns_validation_errors_when_price_is_invalid()
+    {
+        // Arrange: Prepare data with an invalid 'price'
+        $invalidData = [
+            'name' => 'Test Product',
+            'description' => 'This is a test description.',
+            'price' => 'invalid-price', // Invalid price (should be numeric)
+        ];
+
+        // Act: Send a POST request to the /products endpoint
+        $response = $this->postJson('/api/products', $invalidData);
+
+        // Assert: Check for validation errors
+        $response->assertStatus(422); // Unprocessable Entity
+        $response->assertJsonValidationErrors(['price']);
+    }
 }
